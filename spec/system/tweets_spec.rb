@@ -9,11 +9,7 @@ RSpec.describe 'ツイート投稿', type: :system do
   context 'ツイート投稿ができるとき'do
     it 'ログインしたユーザーは新規投稿できる' do
       # ログインする
-      visit new_user_session_path
-      fill_in 'Email', with: @user.email
-      fill_in 'Password', with: @user.password
-      find('input[name="commit"]').click
-      expect(current_path).to eq root_path
+      sign_in(@user)
       # 新規投稿ページへのリンクがある
       expect(page).to have_content('投稿する')
       # 投稿ページに移動する
@@ -55,15 +51,11 @@ RSpec.describe 'ツイート編集', type: :system do
   context 'ツイート編集ができるとき' do
     it 'ログインしたユーザーは自分が投稿したツイートの編集ができる' do
       # ツイート1を投稿したユーザーでログインする
-      visit new_user_session_path
-      fill_in 'Email', with: @tweet1.user.email
-      fill_in 'Password', with: @tweet1.user.password
-      find('input[name="commit"]').click
-      expect(current_path).to eq root_path
+      sign_in(@tweet1.user)
       # ツイート1に「編集」ボタンがある
-       expect(
-      all(".more")[1].hover
-    ).to have_link '編集', href: edit_tweet_path(@tweet1)
+      expect(
+        all(".more")[1].hover
+      ).to have_link '編集', href: edit_tweet_path(@tweet1)
       # 編集ページへ遷移する
       visit edit_tweet_path(@tweet1)
       # すでに投稿済みの内容がフォームに入っている
@@ -74,8 +66,8 @@ RSpec.describe 'ツイート編集', type: :system do
         find('#tweet_text').value
       ).to eq @tweet1.text
       # 投稿内容を編集する
-       fill_in 'tweet_image', with: "#{@tweet1.image}+編集した画像URL"
-       fill_in 'tweet_text', with: "#{@tweet1.text}+編集したテキスト"
+      fill_in 'tweet_image', with: "#{@tweet1.image}+編集した画像URL"
+      fill_in 'tweet_text', with: "#{@tweet1.text}+編集したテキスト"
       # 編集してもTweetモデルのカウントは変わらない
       expect{
         find('input[name="commit"]').click
@@ -95,27 +87,23 @@ RSpec.describe 'ツイート編集', type: :system do
   context 'ツイート編集ができないとき' do
     it 'ログインしたユーザーは自分以外が投稿したツイートの編集画面には遷移できない' do
       # ツイート1を投稿したユーザーでログインする
-      visit new_user_session_path
-      fill_in 'Email', with: @tweet1.user.email
-      fill_in 'Password', with: @tweet1.user.password
-      find('input[name="commit"]').click
-      expect(current_path).to eq root_path
+      sign_in(@tweet1.user)
       # ツイート2に「編集」ボタンがない
       expect(
-      all(".more")[0].hover
-    ).to have_no_link '編集', href: edit_tweet_path(@tweet2)
+        all(".more")[0].hover
+      ).to have_no_link '編集', href: edit_tweet_path(@tweet2)
     end
     it 'ログインしていないとツイートの編集画面には遷移できない' do
       # トップページにいる
       visit root_path
       # ツイート1に「編集」ボタンがない
       expect(
-      all(".more")[1].hover
-    ).to have_no_link '編集', href: edit_tweet_path(@tweet1)
+        all(".more")[1].hover
+      ).to have_no_link '編集', href: edit_tweet_path(@tweet1)
       # ツイート2に「編集」ボタンがない
       expect(
-      all(".more")[0].hover
-    ).to have_no_link '編集', href: edit_tweet_path(@tweet2)
+        all(".more")[0].hover
+      ).to have_no_link '編集', href: edit_tweet_path(@tweet2)
     end
   end
 end
@@ -128,11 +116,7 @@ RSpec.describe 'ツイート削除', type: :system do
   context 'ツイート削除ができるとき' do
     it 'ログインしたユーザーは自らが投稿したツイートの削除ができる' do
       # ツイート1を投稿したユーザーでログインする
-      visit new_user_session_path
-      fill_in 'Email', with: @tweet1.user.email
-      fill_in 'Password', with: @tweet1.user.password
-      find('input[name="commit"]').click
-      expect(current_path).to eq root_path
+      sign_in(@tweet1.user)
       # ツイート1に「削除」ボタンがある
       expect(
         all(".more")[1].hover
@@ -156,27 +140,23 @@ RSpec.describe 'ツイート削除', type: :system do
   context 'ツイート削除ができないとき' do
     it 'ログインしたユーザーは自分以外が投稿したツイートの削除ができない' do
       # ツイート1を投稿したユーザーでログインする
-      visit new_user_session_path
-      fill_in 'Email', with: @tweet1.user.email
-      fill_in 'Password', with: @tweet1.user.password
-      find('input[name="commit"]').click
-      expect(current_path).to eq root_path
+      sign_in(@tweet1.user)
       # ツイート2に「削除」ボタンが無い
       expect(
-          all(".more")[0].hover
-        ).to have_no_link '削除', href: tweet_path(@tweet2)
+        all(".more")[0].hover
+      ).to have_no_link '削除', href: tweet_path(@tweet2)
     end
     it 'ログインしていないとツイートの削除ボタンがない' do
       # トップページに移動する
       visit root_path
       # ツイート1に「削除」ボタンが無い
-       expect(
-          all(".more")[1].hover
-        ).to have_no_link '削除', href: tweet_path(@tweet1)
+      expect(
+        all(".more")[1].hover
+      ).to have_no_link '削除', href: tweet_path(@tweet1)
       # ツイート2に「削除」ボタンが無い
-       expect(
-          all(".more")[0].hover
-        ).to have_no_link '削除', href: tweet_path(@tweet2)
+      expect(
+        all(".more")[0].hover
+      ).to have_no_link '削除', href: tweet_path(@tweet2)
     end
   end
 end
@@ -187,15 +167,11 @@ RSpec.describe 'ツイート詳細', type: :system do
   end
   it 'ログインしたユーザーはツイート詳細ページに遷移してコメント投稿欄が表示される' do
     # ログインする
-    visit new_user_session_path
-    fill_in 'Email', with: @tweet.user.email
-    fill_in 'Password', with: @tweet.user.password
-    find('input[name="commit"]').click
-    expect(current_path).to eq root_path
+    sign_in(@tweet.user)
     # ツイートに「詳細」ボタンがある
     expect(
-        all(".more")[0].hover
-      ).to have_link '詳細', href: tweet_path(@tweet)
+      all(".more")[0].hover
+    ).to have_link '詳細', href: tweet_path(@tweet)
     # 詳細ページに遷移する
     visit tweet_path(@tweet)
     # 詳細ページにツイートの内容が含まれている
@@ -209,8 +185,8 @@ RSpec.describe 'ツイート詳細', type: :system do
     visit root_path
     # ツイートに「詳細」ボタンがある
     expect(
-        all(".more")[0].hover
-      ).to have_link '詳細', href: tweet_path(@tweet)
+      all(".more")[0].hover
+    ).to have_link '詳細', href: tweet_path(@tweet)
     # 詳細ページに遷移する
     visit tweet_path(@tweet)
     # 詳細ページにツイートの内容が含まれている
